@@ -153,6 +153,105 @@ export class ConsultaAnaliticaAlmacenesComponent {
     this.resizingColIndex = null;
   };
 
+  month: number = 0;
+  search() {
+    this.limpiarMEssages();
+    this.month = this.currentMonth;
+    if (this.month = 0) {return;}
+  }
+
+  limpiarSearch() {
+    this.limpiarMEssages();
+    this.currentMonth = this.month;
+  }
+
+  DownloadPDF() {
+    this.limpiarMEssages();
+
+    const source = this.paginatedAlmacenes;
+    if (!source?.length) {
+      this.almacenError = 'No hay datos para exportar.';
+      return;
+    }
+
+    const rows = source.map((row: any) => ({
+      eje: this.currentMonth + "/" + row.eje,
+      depcod: row.depcod ?? '',
+      depdes: row.depdes ?? '',
+      cgecod: row.cgecod ?? '',
+      instal: row.instal ?? ''
+    }));
+
+    const columns = [
+      { header: 'Ejer/Periodo', dataKey: 'eje' },
+      { header: 'Cód. Almacén', dataKey: 'depcod' },
+      { header: 'Descripción', dataKey: 'depdes' },
+      { header: 'Centro Gestor', dataKey: 'cgecod' },
+      { header: 'Cód. Instalación', dataKey: 'instal' }
+    ];
+
+    const doc = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' });
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(14);
+    doc.text('Consulta analîtica de almacenes', 40, 40);
+
+    autoTable(doc, {
+      startY: 60,
+      head: [columns.map(col => col.header)],
+      body: rows.map(row => columns.map(col => row[col.dataKey as keyof typeof row] ?? '')),
+      styles: { font: 'helvetica', fontSize: 10, cellPadding: 6 },
+      headStyles: { fillColor: [240, 240, 240], textColor: 33, fontStyle: 'bold' },
+      columnStyles: {
+        eje: { cellWidth: 15 },
+        depcod: { cellWidth: 15 },
+        depdes: { cellWidth: 40 },
+        cgecod: { cellWidth: 10 },
+        instal: { cellWidth: 10 }
+      }
+    });
+
+    doc.save('Consulta_analîtica_de_almacenes.pdf');
+  }
+
+  downloadExcel() {
+    this.limpiarMEssages();
+    const rows = this.paginatedAlmacenes;
+    if (!rows || rows.length === 0) {
+      this.almacenError = 'No hay datos para exportar.';
+      return;
+    }
+  
+    const exportRows = rows.map(row => ({
+      eje: this.currentMonth + "/" + row.eje,
+      depcod: row.depcod ?? '',
+      depdes: row.depdes ?? '',
+      cgecod: row.cgecod ?? '',
+      instal: row.instal ?? ''
+    }));
+  
+    const worksheet = XLSX.utils.aoa_to_sheet([]);
+    XLSX.utils.sheet_add_aoa(worksheet, [['Consulta analîtica de almacenes']], { origin: 'A1' });
+    worksheet['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 3 } }];
+    XLSX.utils.sheet_add_aoa(worksheet, [['Ejer/Periodo', 'Cód. Almacén', 'Descripción', 'Centro Gestor', 'Cód. Instalación']], { origin: 'A2' });
+    XLSX.utils.sheet_add_json(worksheet, exportRows, { origin: 'A3', skipHeader: true });
+
+    worksheet['!cols'] = [
+      { wch: 15 },
+      { wch: 15 },
+      { wch: 40 },
+      { wch: 10 },
+      { wch: 15 }
+    ];
+  
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Almacenes');
+    const buffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+    saveAs(
+      new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }),
+      'Consulta_analîtica_de_almacenes.xlsx'
+    );
+  }
+
   //misc
   limpiarMEssages() {
     this.almacenSuccess = '';
