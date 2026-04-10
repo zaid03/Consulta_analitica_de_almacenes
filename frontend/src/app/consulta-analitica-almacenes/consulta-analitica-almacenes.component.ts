@@ -66,6 +66,18 @@ export class ConsultaAnaliticaAlmacenesComponent {
   fatchAlmacenes() {
     this.isLoading = true;
     this.limpiarMEssages();
+
+    this.http.get<any>(`${environment.backendUrl}/api/dep/fetch-consulta-almacenes/${this.entcod}/${this.eje}`).subscribe({
+      next: (res) => {
+        this.isLoading = false;
+        this.almacenes = res;
+        this.updatePagination();
+      },
+      error: (err) => {
+        this.isLoading = false;
+        this.almacenError = err.error.error || err.error;
+      }
+    })
   }
   private updatePagination(): void {const total = this.totalPages;
     if (total === 0) {this.page = 0; return;}
@@ -76,6 +88,70 @@ export class ConsultaAnaliticaAlmacenesComponent {
   prevPage(): void {if (this.page > 0) this.page--;}
   nextPage(): void {if (this.page < this.totalPages - 1) this.page++;}
   goToPage(event: any): void {const inputPage = Number(event.target.value); if (inputPage >= 1 && inputPage <= this.totalPages) {this.page = inputPage - 1;}}
+
+
+  //main table functions
+  sortField: 'eje' | 'depcod' | 'cgecod' | 'depdes' | null = null;
+  sortColumn: string = '';
+  sortDirection: 'asc' | 'desc' = 'asc';
+  toggleSort(column: string) {
+    if (this.sortColumn === column) {
+      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.sortColumn = column;
+      this.sortDirection = 'asc';
+    }
+    this.applySort();
+    this.page = 0;
+    this.updatePagination();
+  }
+
+  private applySort(): void {
+  if (!this.sortColumn) return;
+  
+  // Helper to pad numbers for proper sorting
+  const parseValue = (val: string) => {
+    return val.replace(/(\d+)/g, (match) => {
+      return match.padStart(20, '0');
+    });
+  };
+
+  this.almacenes.sort((a, b) => {
+    const aValue = parseValue((a[this.sortColumn] ?? '').toString().toUpperCase());
+    const bValue = parseValue((b[this.sortColumn] ?? '').toString().toUpperCase());
+    
+    const comparison = aValue.localeCompare(bValue);
+    return this.sortDirection === 'asc' ? comparison : -comparison;
+  });
+}
+  private startX: number = 0;
+  private startWidth: number = 0;
+  private resizingColIndex: number | null = null;
+  startResize(event: MouseEvent, colIndex: number) {
+    this.resizingColIndex = colIndex;
+    this.startX = event.pageX;
+    const th = (event.target as HTMLElement).parentElement as HTMLElement;
+    this.startWidth = th.offsetWidth;
+
+    document.addEventListener('mousemove', this.onResizeMove);
+    document.addEventListener('mouseup', this.stopResize);
+  }
+
+  onResizeMove = (event: MouseEvent) => {
+    if (this.resizingColIndex === null) return;
+    const table = document.querySelector('.main-table') as HTMLTableElement;
+    if (!table) return;
+    const th = table.querySelectorAll('th')[this.resizingColIndex] as HTMLElement;
+    if (!th) return;
+    const diff = event.pageX - this.startX;
+    th.style.width = (this.startWidth + diff) + 'px';
+  };
+
+  stopResize = () => {
+    document.removeEventListener('mousemove', this.onResizeMove);
+    document.removeEventListener('mouseup', this.stopResize);
+    this.resizingColIndex = null;
+  };
 
   //misc
   limpiarMEssages() {

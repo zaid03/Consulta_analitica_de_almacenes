@@ -58,23 +58,57 @@
             <table class="main-table">
                 <thead>
                     <tr>
-                        <th>Ejer/Periodo</th>
-                        <th>Cód. Almacén</th>
-                        <th>Descripción</th>
-                        <th>Centro Gestor</th>
-                        <th>Cód. Instalación</th>
+                        <th class="sortable resizable" (click)="toggleSort('eje')">
+                            Ejer/Periodo
+                            <span class="sort-indicator" *ngIf="sortColumn === 'eje'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
+                            <div class="resizer" (mousedown)="startResize($event, 0)"></div>
+                        </th>
+                        <th class="sortable resizable" (click)="toggleSort('depcod')">
+                            Cód. Almacén
+                            <span class="sort-indicator" *ngIf="sortColumn === 'depcod'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
+                            <div class="resizer" (mousedown)="startResize($event, 1)"></div>
+                        </th>
+                        <th class="sortable resizable" (click)="toggleSort('depdes')">
+                            Descripción
+                            <span class="sort-indicator" *ngIf="sortColumn === 'depdes'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
+                            <div class="resizer" (mousedown)="startResize($event, 2)"></div>
+                        </th>
+                        <th class="sortable resizable" (click)="toggleSort('cgecod')">
+                            Centro Gestor
+                            <span class="sort-indicator" *ngIf="sortColumn === 'cgecod'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
+                            <div class="resizer" (mousedown)="startResize($event, 3)"></div>
+                        </th>
+                        <th class="sortable resizable" (click)="toggleSort('')">
+                            Cód. Instalación
+                            <span class="sort-indicator" *ngIf="sortColumn === ''">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
+                            <div class="resizer" (mousedown)="startResize($event, 4)"></div>
+                        </th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr *ngFor="let p of paginatedAlmacenes">
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
+                        <td>{{currentMonth +"/" + p.eje}}</td>
+                        <td>{{p.depcod}}</td>
+                        <td>{{p.depdes}}</td>
+                        <td>{{p.cgecod}}</td>
                         <td></td>
                     </tr>
                 </tbody>
             </table>
+            <div class="pagination-controls">
+                <button (click)="prevPage()" [disabled]="page === 0">Anterior</button>
+                <span>Página</span>
+                <input
+                type="number"
+                min="1"
+                [max]="totalPages"
+                [value]="page + 1"
+                (change)="goToPage($event)"
+                class="pagination-input"
+                />
+                <span>de {{ totalPages }}</span>
+                <button (click)="nextPage()" [disabled]="page + 1 >= totalPages">Siguiente</button>
+            </div>
         </div>
     </div>
 </div>

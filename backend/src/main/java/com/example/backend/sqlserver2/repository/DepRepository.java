@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 import com.example.backend.dto.DepWithCgeView;
 import com.example.backend.sqlserver2.model.Dep;
 import com.example.backend.sqlserver2.model.DepId;
+import com.example.backend.dto.ConsultaAlmacenes;
 
 @Repository
 public interface DepRepository  extends JpaRepository<Dep, DepId> {
@@ -16,4 +17,7 @@ public interface DepRepository  extends JpaRepository<Dep, DepId> {
     
     //for selecting centro gestor in login
     List<Dep> findByENTAndEJEAndDEPCODIn(Integer ent, String eje, List<String> depcods);
+
+    //selecing services for consulta de almcenes 
+    List<ConsultaAlmacenes> findByENTAndEJEAndDEPALM(Integer ent, String eje, Integer depalm);
 }
