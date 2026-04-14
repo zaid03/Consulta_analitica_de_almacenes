@@ -19,7 +19,7 @@ import { saveAs } from 'file-saver';
   styleUrls: ['./consulta-analitica-almacenes.component.css']
 })
 export class ConsultaAnaliticaAlmacenesComponent {
-   //3 dots menu 
+  //3 dots menu 
   showMenu = false;
   toggleMenu(event: MouseEvent): void {
     event.stopPropagation();
@@ -152,18 +152,6 @@ export class ConsultaAnaliticaAlmacenesComponent {
     document.removeEventListener('mouseup', this.stopResize);
     this.resizingColIndex = null;
   };
-
-  month: number = 0;
-  search() {
-    this.limpiarMEssages();
-    this.month = this.currentMonth;
-    if (this.month = 0) {return;}
-  }
-
-  limpiarSearch() {
-    this.limpiarMEssages();
-    this.currentMonth = this.month;
-  }
 
   DownloadPDF() {
     this.limpiarMEssages();
